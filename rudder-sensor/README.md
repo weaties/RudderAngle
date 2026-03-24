@@ -9,16 +9,20 @@ publishes it to a Signal K Server over WebSocket. Built with
 - ESP32 dev board (WROOM-32 or similar)
 - GY-AS5600 magnetic angle sensor breakout
 - 6mm diametric magnet (attached to rudder post)
+- GME12864-11 OLED display (128x64, SSD1306, I2C)
 
 ## Wiring
 
+Both the AS5600 and the OLED share the same I2C bus (no conflict — AS5600 is
+at `0x36`, OLED at `0x3C`).
+
 ```
-AS5600    ESP32
-------    -----
-VCC   →   3.3V
-GND   →   GND
-SDA   →   GPIO 21
-SCL   →   GPIO 22
+AS5600    ESP32         OLED (GME12864-11)    ESP32
+------    -----         ------------------    -----
+VCC   →   3.3V          VCC            →      3.3V
+GND   →   GND           GND            →      GND
+SDA   →   GPIO 21       SDA            →      GPIO 21
+SCL   →   GPIO 22       SCL            →      GPIO 22
 ```
 
 ## Build & Flash
@@ -95,6 +99,13 @@ above the chip. If readings are erratic:
 - Check that the ESP32 and Pi are on the same "bigair" network
 - Look at the ESP32 serial output for mDNS discovery messages
 - Try setting the server address explicitly in the SensESP web UI
+
+### OLED display not working
+
+- Verify wiring — the OLED shares SDA/SCL with the AS5600 on GPIO 21/22
+- Confirm the display I2C address is `0x3C` (run an I2C scanner sketch)
+- The display is optional — the sensor continues publishing to Signal K even if
+  the OLED is not connected or fails to initialize
 
 ### Readings stuck at 0
 

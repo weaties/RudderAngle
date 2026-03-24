@@ -1,6 +1,7 @@
 #include <Wire.h>
 
 #include "as5600_sensor.h"
+#include "display.h"
 #include "sensesp/signalk/signalk_output.h"
 #include "sensesp/transforms/lambda_transform.h"
 #include "sensesp/transforms/moving_average.h"
@@ -9,9 +10,8 @@
 
 using namespace sensesp;
 
-// Calibration zero-offset stored as a LambdaTransform parameter so it's
-// editable via the SensESP web UI and persisted to flash.
-static float zero_offset = 0.0f;
+// Latest smoothed rudder angle for display
+static float current_angle_rad = 0.0f;
 
 void setup() {
   SetupLogging();
@@ -21,8 +21,11 @@ void setup() {
                     ->set_wifi_client("bigair", "")
                     ->get_app();
 
-  // Initialize I2C: SDA=21, SCL=22
+  // Initialize I2C: SDA=21, SCL=22 (shared by AS5600 and OLED)
   Wire.begin(21, 22);
+
+  // Initialize the OLED display
+  display_init();
 
   // Read AS5600 at 10 Hz (100 ms interval)
   auto* sensor = new RepeatSensor<float>(100, []() -> float {
@@ -61,12 +64,28 @@ void setup() {
       ->set_description("Moving average window size for jitter reduction.")
       ->set_sort_order(1100);
 
-  // Wire the pipeline: sensor → calibrate → smooth → Signal K
+  // Capture the smoothed angle for the display
+  auto* display_tap = new LambdaTransform<float, float>(
+      [](float angle) -> float {
+        current_angle_rad = angle;
+        return angle;
+      });
+
+  // Wire the pipeline: sensor → calibrate → smooth → display tap → Signal K
   sensor->connect_to(calibration)
       ->connect_to(smooth)
+      ->connect_to(display_tap)
       ->connect_to(new SKOutputFloat(
           "steering.rudderAngle", "/rudder/sk",
           new SKMetadata("rad", "Rudder Angle")));
+
+  // Update the OLED display at 5 Hz (every 200ms)
+  event_loop()->onRepeat(200, []() {
+    bool wifi_ok = WiFi.status() == WL_CONNECTED;
+    bool sk_ok = sensesp_app->get_ws_client() &&
+                 sensesp_app->get_ws_client()->is_connected();
+    display_update(current_angle_rad, wifi_ok, sk_ok);
+  });
 }
 
 void loop() { event_loop()->tick(); }
