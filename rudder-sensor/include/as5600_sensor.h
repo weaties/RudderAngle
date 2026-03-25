@@ -10,8 +10,8 @@ constexpr uint8_t AS5600_RAW_ANGLE_REG = 0x0C;
 // 12-bit range to radians: 2*PI / 4096
 constexpr float AS5600_COUNTS_TO_RAD = 6.283185307f / 4096.0f;
 
-// Max rudder angle clamp: ±45° in radians
-constexpr float RUDDER_ANGLE_MAX_RAD = 0.785398163f;
+// Max rudder angle clamp: ±88° in radians
+constexpr float RUDDER_ANGLE_MAX_RAD = 1.53588974f;
 
 /**
  * Read the raw 12-bit angle from the AS5600 over I2C.
@@ -50,7 +50,7 @@ inline float as5600_to_rudder_angle(int16_t raw, float zero_offset) {
     angle_rad += 6.28318530f;
   }
 
-  // Clamp to ±45°
+  // Clamp to ±88°
   if (angle_rad > RUDDER_ANGLE_MAX_RAD) {
     angle_rad = RUDDER_ANGLE_MAX_RAD;
   } else if (angle_rad < -RUDDER_ANGLE_MAX_RAD) {

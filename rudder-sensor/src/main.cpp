@@ -1,6 +1,7 @@
 #include <Wire.h>
 
 #include "as5600_sensor.h"
+#include "credentials.h"
 #include "display.h"
 #include "sensesp/signalk/signalk_output.h"
 #include "sensesp/transforms/lambda_transform.h"
@@ -18,7 +19,7 @@ void setup() {
 
   SensESPAppBuilder builder;
   sensesp_app = builder.set_hostname("rudder-angle")
-                    ->set_wifi_client("bigair", "")
+                    ->set_wifi_client(WIFI_SSID, WIFI_PASSWORD)
                     ->get_app();
 
   // Initialize I2C: SDA=21, SCL=22 (shared by AS5600 and OLED)

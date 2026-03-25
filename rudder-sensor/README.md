@@ -31,17 +31,21 @@ Requires [PlatformIO](https://platformio.org/).
 
 ```bash
 cd rudder-sensor
+cp include/credentials.example.h include/credentials.h
+# Edit include/credentials.h with your WiFi SSID and password
 pio run -t upload
 pio device monitor        # watch serial output
 ```
 
+`credentials.h` is gitignored — your WiFi password stays out of version control.
+
 ## First Boot
 
-1. The ESP32 tries to connect to WiFi SSID "bigair". If it can't connect (or
-   no password is set), it creates an access point named **"rudder-angle"**
+1. The ESP32 connects to the WiFi network configured in `credentials.h`. If it
+   can't connect, it creates an access point named **"rudder-angle"**
    (password: `thisisfine`).
 2. Connect to the AP, open `http://192.168.4.1` in a browser.
-3. Enter the WiFi SSID (`bigair`) and password, then save.
+3. Enter the WiFi SSID and password, then save.
 4. The device reboots, connects to the network, and discovers the Signal K
    Server via mDNS automatically.
 
