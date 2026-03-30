@@ -15,7 +15,7 @@ constexpr uint8_t SSD1306_ADDR = 0x3C;
 constexpr int GAUGE_CENTER_X = 64;
 constexpr int GAUGE_CENTER_Y = 52;
 constexpr int GAUGE_RADIUS = 30;
-constexpr float MAX_DEFLECTION_RAD = 1.53588974f;  // 88°
+constexpr float MAX_DEFLECTION_RAD = 0.785398163f;  // 45°
 
 static Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 static bool display_ok = false;
@@ -80,8 +80,8 @@ inline void display_update(float angle_rad, bool wifi_connected,
   oled.print("S");
 
   // -- Gauge arc (bottom) --
-  // Draw arc from -88° to +88° (mapped to screen angles)
-  for (int i = -88; i <= 88; i += 3) {
+  // Draw arc from -45° to +45° (mapped to screen angles)
+  for (int i = -45; i <= 45; i += 3) {
     float screen_angle = (270.0f - (float)i) * 0.0174533f;  // deg to rad
     int x = GAUGE_CENTER_X + (int)(GAUGE_RADIUS * cos(screen_angle));
     int y = GAUGE_CENTER_Y - (int)(GAUGE_RADIUS * sin(screen_angle));
@@ -100,8 +100,8 @@ inline void display_update(float angle_rad, bool wifi_connected,
 
   // Needle — line from center to arc edge at current angle
   float clamped = angle_deg;
-  if (clamped > 88.0f) clamped = 88.0f;
-  if (clamped < -88.0f) clamped = -88.0f;
+  if (clamped > 45.0f) clamped = 45.0f;
+  if (clamped < -45.0f) clamped = -45.0f;
   float needle_angle = (270.0f - clamped) * 0.0174533f;
   int nx = GAUGE_CENTER_X + (int)((GAUGE_RADIUS - 2) * cos(needle_angle));
   int ny = GAUGE_CENTER_Y - (int)((GAUGE_RADIUS - 2) * sin(needle_angle));
